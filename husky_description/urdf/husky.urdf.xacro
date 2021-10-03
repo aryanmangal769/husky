@@ -56,11 +56,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <!-- Included URDF/XACRO Files -->
   <xacro:include filename="$(find husky_description)/urdf/decorations.urdf.xacro" />
   <xacro:include filename="$(find husky_description)/urdf/wheel.urdf.xacro" />
+  
+  <xacro:include filename="$(find husky_description)/urdf/macros.xacro" />
+  <xacro:property name="laserSize" value="0.25"/>
+  <xacro:property name="laserMass" value="0.001"/>
 
   <xacro:include filename="$(find husky_description)/urdf/accessories/intel_realsense.urdf.xacro"/>
-  <xacro:include filename="$(find husky_description)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/>
-  <xacro:include filename="$(find husky_description)/urdf/accessories/sensor_arch.urdf.xacro"/>
-  <xacro:include filename="$(find husky_description)/urdf/accessories/vlp16_mount.urdf.xacro"/>
+  <!--xacro:include filename="$(find husky_description)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/-->
+  <!--xacro:include filename="$(find husky_description)/urdf/accessories/sensor_arch.urdf.xacro"/-->
+  <!--xacro:include filename="$(find husky_description)/urdf/accessories/vlp16_mount.urdf.xacro"/-->
 
   <xacro:property name="M_PI" value="3.14159"/>
 
@@ -209,6 +213,70 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
       <origin xyz="$(arg laser_3d_xyz)" rpy="$(arg laser_3d_rpy)" />
     </xacro:vlp16_mount>
   </xacro:if>
+  
+  
+  
+  <joint name="laser_joint" type="fixed">
+    <origin xyz="${-laserSize/2+base_y_size/2} 0 ${base_z_size/2+wheel_radius+laserSize/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="laser"/>
+  </joint>
+
+  <link name="laser">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${laserSize} ${laserSize} ${laserSize}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+	      <box size="${laserSize} ${laserSize} ${laserSize}"/>
+        <!--IF you want fatties around your bot use HOkuyu lidar Mesh-->
+        <!--<mesh filename="package://ugv_bot/ugvbot_description/hokuyo.dae"/>-->
+      </geometry>
+      <material name="White"/>
+    </visual>
+
+    <inertial>
+      <mass value="${laserMass}" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <box_inertia m="${laserMass}" x="${laserSize}" y="${laserSize}" z="${laserSize}" />
+    </inertial>
+  </link>
+
+
+  <gazebo reference="laser">
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>20</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.04</min>
+          <max>100.0</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/scan</topicName>
+        <frameName>laser</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
