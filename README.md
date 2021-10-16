@@ -4,6 +4,25 @@ husky
 Common ROS packages for the Clearpath Husky, useable for both simulation and
 real robot operation.
 
+
+ Install packages :
+
+```jsx
+15  sudo apt-get install ros-noetic-move-base
+18  sudo apt install ros-noetic-dwa-local-planner
+21  sudo apt-get install ros-noetic-slam-gmapping
+24  sudo apt-get  install ros-noetic-robot-localization
+
+```
+
+Build the package using catkin build
+
+Run the way point navigation script using the command below:
+
+```jsx
+rosrun husky_navigation way-point.py
+```
+
  - husky_control : Control configuration
  - husky_description : Robot description (URDF)
  - husky_msgs : Message definitions
